@@ -1,0 +1,79 @@
+{% extends "catalog/layout.html" %}
+{% load bootstrap3 %}
+
+{% block content %}
+<div class="media">
+    <div class="media-left">
+    <img src="{{ book.image.url }}" class="align-self-start mr-3" alt="{{ book.title }}" style="width: auto; height: 350px; object-fit: contain;">
+    </div>
+    <div class="media-body">
+        {% if user.moderator or user.is_superuser %}
+        <a href="{% url 'catalog:edit_book' book.id %}">edit book</a>
+        <a href="{% url 'catalog:delete_book' book.id %}">delete book</a>
+        {% endif %}
+    <h2 class="media-heading">{{ book.title }}</h2>
+        {% if book.genre.all %}
+            <h4 class="media-heading"><i>Genere: {{ book.genre.all|join:", " }}</i></h4>
+        {% else %}
+            <h4 class="media-heading"><i>Genere: Unknown</i></h4>
+        {% endif %}
+    <h4 class="media-heading">Written by {{ book.author }}</h4>
+    <p>{{ book.description }}</p>
+    </div>
+</div>
+
+
+<div class="container" style="padding-top:15px; padding-left:0px">
+<div class="row bootstrap snippets bootdeys">
+    <div class="col-md-8 col-sm-12">
+        <div class="comment-wrapper">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    Comments
+                </div>
+                <div class="panel-body">
+                    {% comment %}<textarea class="form-control" placeholder="write a comment..." rows="3"></textarea>{% endcomment %}
+                    <br>
+
+                    <form action="{% url 'catalog:book' book.id %}" method="post" class="form">
+                        {% csrf_token %}
+                        {% bootstrap_form form %}
+                        {% buttons %}
+                        <button name="submit" class="btn btn_primary">Post</button>
+                        {% comment %}<button type="button" class="btn btn-info pull-right">Post</button>{% endcomment %}
+                        {% endbuttons %}
+                    </form>
+
+                    <div class="clearfix"></div>
+                    <hr>
+                    <ul class="media-list">
+                        {% if comments is not none %}
+                            {% for comment in comments  %}
+                                <li class="media">
+                                <a href="#" class="pull-left">
+                                <img src="https://bootdey.com/img/Content/user_1.jpg" alt="" class="img-circle">
+                                </a>
+                                <div class="media-body">
+                                    <span class="text-muted pull-right">
+                                        <small class="text-muted">{{ comment.date_added }}</small>
+                                        {% if user.moderator or user.is_superuser %}
+                                        <a href="{% url 'catalog:delete_comment' comment.id %}">delete comment</a>
+                                        {% endif %}
+                                    </span>
+                                    <strong class="text-success">{{ comment.created_by }}</strong>
+                                    <p>
+                                        {{ comment.comment }}
+                                    </p>
+                                </div>
+                                </li>
+                            {% endfor %}
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+{% endblock %}

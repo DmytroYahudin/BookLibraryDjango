@@ -1,0 +1,17 @@
+{% extends "catalog/layout.html" %}
+{% load bootstrap3 %}
+
+{% block header %}
+    <h2>Add a new book</h2>
+{% endblock header %}
+
+{% block content %}
+    <form action="{% url 'catalog:add_author' %}" method="post" class="form">
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        {% buttons %}
+            <button name="submit" class="btn btn_primary">Add author</button>
+        {% endbuttons %}
+    </form>
+
+{% endblock content %}

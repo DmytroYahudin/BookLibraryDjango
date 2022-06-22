@@ -1,0 +1,66 @@
+{% load bootstrap3 %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>Book Library</title>
+
+        {% bootstrap_css %}
+        {% bootstrap_javascript %}
+    </head>
+
+    <body>
+
+    <!-- Static navigation panel -->
+        <nav class="navbar navbar-default navbar-static-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed"
+                            data-toggle="collapse" data-target="#navbar"
+                            aria-expanded="false" aria-controls="navbar">
+                    </button>
+                    <a class="navbar-brand" href="{% url 'catalog:index' %}">Book Library</a>
+                </div>
+                {% if user.is_authenticated %}
+                    <form action="{% url 'catalog:search_book' %}" method="get" class="navbar-form navbar-left">
+
+                        <div class="form-group">
+                            <input type="text" class="form-control" placeholder="Search" name="searched">
+                        </div>
+                            <button type="submit" class="btn btn-default">Search</button>
+                    </form>
+                {% endif %}
+                <div id="navbar" class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav navbar-right">
+                        {% if user.is_authenticated %}
+                            {% if user.moderator or user.is_superuser %}
+                                <li><a href="{% url 'catalog:add_author' %}">Add Author</a></li>
+                                <li><a href="{% url 'catalog:add_book' %}">Add Book</a></li>
+                            {% endif %}
+                        <li><a>Hello, {{ user.user_name|title }}</a></li>
+                        <li><a href="{% url 'user:logout' %}">Log out</a></li>
+                        {% else %}
+                        <li><a href="{% url 'user:register' %}">Register</a></li>
+                        <li><a href="{% url 'user:login' %}">Log in</a></li>
+                        {% endif %}
+                    </ul>
+                </div><!-- /.nav-collapse -->
+            </div>
+        </nav>
+
+
+        <div class="container">
+            <div class="page-header" style="margin-top:5px">
+            <div>
+                {% block header %}{% endblock header %}
+            </div>
+            <div>
+                {% block content %}{% endblock content %}
+            </div>
+        </div><!-- /container -->
+    </body>
+</html>
