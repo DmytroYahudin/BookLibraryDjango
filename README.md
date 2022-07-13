@@ -19,7 +19,7 @@ Clone repository from GitHub via command:
 git clone https://github.com/DmytroYahudin/BookLibraryDjango.git
 ```
 In order to build docker container you need installed [Docker Compose](https://docs.docker.com/compose/gettingstarted/) in your system.
-Make sure that Docker is installed on your pc and build the container.
+Make sure that Docker is installed on your pc and build the container.\
 Linux:
 ```bash
 sudo docker-compose up -d
