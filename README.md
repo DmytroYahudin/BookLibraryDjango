@@ -5,7 +5,7 @@ The database diagram (ERD) and the use cases are described in Book Library.pptx
 ## Installation
 In order to pull the repository and run the web application you may follow the next steps:
 
-Create project directory
+Create project directory\
 Linux/Windows:
 ```bash
 mkdir <your_project_directory>
