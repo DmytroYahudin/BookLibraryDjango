@@ -1,5 +1,5 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
 
 # Create your models here.
 
@@ -28,7 +28,7 @@ class Book(models.Model):
     number_of_views = models.IntegerField(default=0)
 
     class Meta:
-        ordering = ['-number_of_views']
+        ordering = ["-number_of_views"]
 
     def __str__(self):
         return self.title
@@ -41,8 +41,7 @@ class Comments(models.Model):
     date_added = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name_plural = 'comments'
-
+        verbose_name_plural = "comments"
 
     def __str__(self):
         return self.comment

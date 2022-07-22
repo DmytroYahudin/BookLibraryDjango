@@ -1,14 +1,16 @@
-from django.shortcuts import render, get_object_or_404
-from django.views.generic import ListView, DeleteView
-from django.http import HttpResponseRedirect
+from datetime import datetime
+
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
+from django.db.models import F, Q
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse, reverse_lazy
 from django.views import View
-from django.db.models import F, Q
-from django.contrib.auth.mixins import LoginRequiredMixin
-from datetime import datetime
+from django.views.generic import DeleteView, ListView
+
+from .forms import AuthorForm, BookForm, CommentForm
 from .models import Book, Comments
-from .forms import CommentForm, BookForm, AuthorForm
 
 
 class Index(ListView):
@@ -18,21 +20,23 @@ class Index(ListView):
 
 
 class SearchBook(LoginRequiredMixin, ListView):
-    login_url = '/user/login/'
+    login_url = "/user/login/"
     template_name = "catalog/search_results.html"
     model = Book
     paginate_by = 6
 
     def get_queryset(self):
-        searched = str(self.request.GET['searched'])
-        object_list = Book.objects.filter(Q(title__icontains=searched) |
-                                          Q(author__first_name__icontains=searched) |
-                                          Q(author__last_name__icontains=searched))
+        searched = str(self.request.GET["searched"])
+        object_list = Book.objects.filter(
+            Q(title__icontains=searched)
+            | Q(author__first_name__icontains=searched)
+            | Q(author__last_name__icontains=searched)
+        )
         return object_list
 
 
 class BookView(LoginRequiredMixin, View):
-    login_url = '/user/login/'
+    login_url = "/user/login/"
     form_class = CommentForm
     template_name = "catalog/book.html"
 
@@ -41,13 +45,13 @@ class BookView(LoginRequiredMixin, View):
         context = {}
         try:
             comments = Comments.objects.filter(for_book=book_id)
-            context['comments'] = comments.order_by('-date_added')
+            context["comments"] = comments.order_by("-date_added")
         except Comments.DoesNotExist:
-            context['comments'] = None
-        book.number_of_views = F('number_of_views') + 1
+            context["comments"] = None
+        book.number_of_views = F("number_of_views") + 1
         book.save()
-        context['book'] = book
-        context['form'] = self.form_class()
+        context["book"] = book
+        context["form"] = self.form_class()
         return render(request, self.template_name, context)
 
     def post(self, request, book_id):
@@ -58,18 +62,18 @@ class BookView(LoginRequiredMixin, View):
             comment.for_book = book
             comment.created_by = request.user
             comment.save()
-            return HttpResponseRedirect(reverse('catalog:book', args=(book_id,)))
+            return HttpResponseRedirect(reverse("catalog:book", args=(book_id,)))
 
 
 class NewBook(LoginRequiredMixin, View):
-    login_url = '/user/login/'
+    login_url = "/user/login/"
     form_class = BookForm
     template_name = "catalog/add_book.html"
 
     def get(self, request):
         if self.request.user.is_superuser or self.request.user.moderator:
             form = self.form_class()
-            context = {'form': form}
+            context = {"form": form}
             return render(request, self.template_name, context)
         else:
             raise PermissionDenied
@@ -79,21 +83,21 @@ class NewBook(LoginRequiredMixin, View):
         if form.is_valid():
             new_book = form.save(commit=False)
             if any(request.FILES):
-                new_book.image = request.FILES['image']
+                new_book.image = request.FILES["image"]
             new_book.save()
-            return HttpResponseRedirect(reverse('catalog:index'))
+            return HttpResponseRedirect(reverse("catalog:index"))
 
 
 class EditBook(LoginRequiredMixin, View):
-    login_url = '/user/login/'
-    template_name = 'catalog/edit_book.html'
+    login_url = "/user/login/"
+    template_name = "catalog/edit_book.html"
     form_class = BookForm
 
     def get(self, request, book_id):
         if self.request.user.is_superuser or self.request.user.moderator:
             book = Book.objects.get(pk=book_id)
             form = self.form_class(instance=book)
-            context = {'book': book, 'form': form}
+            context = {"book": book, "form": form}
             return render(request, self.template_name, context)
         else:
             raise PermissionDenied
@@ -104,18 +108,18 @@ class EditBook(LoginRequiredMixin, View):
         form = self.form_class(instance=book, data=request.POST)
         if form.is_valid():
             form.save()
-            return HttpResponseRedirect(reverse('catalog:book', args=(book_id,)))
+            return HttpResponseRedirect(reverse("catalog:book", args=(book_id,)))
 
 
 class NewAuthor(LoginRequiredMixin, View):
-    login_url = '/user/login/'
+    login_url = "/user/login/"
     form_class = AuthorForm
     template_name = "catalog/add_author.html"
 
     def get(self, request):
         if self.request.user.is_superuser or self.request.user.moderator:
             form = self.form_class()
-            context = {'form': form}
+            context = {"form": form}
             return render(request, self.template_name, context)
         else:
             raise PermissionDenied
@@ -125,12 +129,12 @@ class NewAuthor(LoginRequiredMixin, View):
         if form.is_valid():
             new_author = form.save(commit=False)
             new_author.save()
-            return HttpResponseRedirect(reverse('catalog:index'))
+            return HttpResponseRedirect(reverse("catalog:index"))
 
 
 class DeleteBook(LoginRequiredMixin, DeleteView):
-    login_url = '/user/login/'
-    template_name = 'catalog/book_delete_confirmation.html'
+    login_url = "/user/login/"
+    template_name = "catalog/book_delete_confirmation.html"
 
     def get_object(self, queryset=None):
         if self.request.user.is_superuser or self.request.user.moderator:
@@ -140,12 +144,12 @@ class DeleteBook(LoginRequiredMixin, DeleteView):
             raise PermissionDenied
 
     def get_success_url(self):
-        return reverse('catalog:index')
+        return reverse("catalog:index")
 
 
 class DeleteComment(LoginRequiredMixin, DeleteView):
-    login_url = '/user/login/'
-    template_name = 'catalog/comment_delete_confirmation.html'
+    login_url = "/user/login/"
+    template_name = "catalog/comment_delete_confirmation.html"
 
     def get_object(self, queryset=None):
         if self.request.user.is_superuser or self.request.user.moderator:
@@ -156,4 +160,4 @@ class DeleteComment(LoginRequiredMixin, DeleteView):
 
     def get_success_url(self):
         book_id = Comments.objects.get(pk=self.kwargs.get("comment_id")).for_book.pk
-        return reverse('catalog:book', args=(book_id,))
+        return reverse("catalog:book", args=(book_id,))
